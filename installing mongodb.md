@@ -8,32 +8,59 @@ Below is a **step-by-step guide** for installing MongoDB on **Ubuntu 24**, creat
 sudo apt update
 sudo apt upgrade -y
 ```
+Install MongoDB Community Edition
+Follow these steps to install MongoDB Community Edition using the apt package manager.
 
-### **1.2 Install MongoDB**
-1. Import the MongoDB public GPG key:
-   ```bash
-   sudo apt-get install gnupg
-   wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg --dearmor -o /usr/share/keyrings/mongodb-archive-keyring.gpg
-   ```
+1
+Import the public key.
 
-2. Add the MongoDB repository:
-   ```bash
-   echo "deb [signed-by=/usr/share/keyrings/mongodb-archive-keyring.gpg] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-   ```
+From a terminal, install gnupg and curl if they are not already available:
+```bash
+sudo apt-get install gnupg curl
+```
+To import the MongoDB public GPG key, run the following command:
+```bash
+curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | \
+   sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg \
+   --dearmor
+```
+2
+Create the list file.
 
-3. Update the package list and install MongoDB:
-   ```bash
-   sudo apt update
-   sudo apt install -y mongodb-org
-   ```
+Create the list file /etc/apt/sources.list.d/mongodb-org-8.0.list for your version of Ubuntu.
 
-4. Start and enable MongoDB:
+```bash
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+```
+3
+Reload the package database.
+
+Issue the following command to reload the local package database:
+```bash
+sudo apt-get update
+```
+
+4
+Install MongoDB Community Server.
+
+You can install either the latest stable version of MongoDB or a specific version of MongoDB.
+
+
+Latest Release
+
+Specific Release
+To install the latest stable version, issue the following
+```bash
+sudo apt-get install -y mongodb-org
+```
+
+5. Start and enable MongoDB:
    ```bash
    sudo systemctl start mongod
    sudo systemctl enable mongod
    ```
 
-5. Verify MongoDB is running:
+6. Verify MongoDB is running:
    ```bash
    sudo systemctl status mongod
    ```
