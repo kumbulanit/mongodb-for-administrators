@@ -107,6 +107,11 @@
   db.students.find({ name: "Alice", age: { $gt: 20 } });
   ```
 
+  - run efficient index after indexing email and age 
+  ```javascript
+  db.students.find({ email: "alicebrown@university.edu", age: { $gt: 20 } })
+  ```
+
 ### **4.3 Analyze Profiler Data**
 - View the profiler logs:
   ```javascript
