@@ -109,7 +109,7 @@
 
   - run efficient index after indexing email and age 
   ```javascript
-  db.students.find({ email: "alicebrown@university.edu", age: { $gt: 20 } })
+  db.students.find({ email: "alicebrown@university.edu", age: { $gt: 19 } })
   ```
 
 ### **4.3 Analyze Profiler Data**
