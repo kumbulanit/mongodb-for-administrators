@@ -106,6 +106,12 @@
   ```javascript
   db.students.find({ name: "Alice", age: { $gt: 20 } });
   ```
+  - to run an efficient indexing start by compound index
+
+  - Create a compound index on the `email` and `age` fields:
+  ```javascript
+  db.students.createIndex({ email: 1, age: -1 });
+  ```
 
   - run efficient index after indexing email and age 
   ```javascript
