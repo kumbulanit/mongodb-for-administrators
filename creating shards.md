@@ -41,7 +41,7 @@ mongod --configsvr --replSet configReplSet --port 27021 --dbpath ~/mongodb/confi
 
 2. Connect to one of the config servers:
    ```bash
-   mongo --port 27019
+   mongosh --port 27019
    ```
 
 3. Initiate the replica set:
@@ -80,7 +80,7 @@ mongod --shardsvr --replSet shard3ReplSet --port 27024 --dbpath ~/mongodb/shard3
 
    For `shard1`:
    ```bash
-   mongo --port 27022
+   mongosh --port 27022
    ```
    ```javascript
    rs.initiate({
@@ -91,7 +91,7 @@ mongod --shardsvr --replSet shard3ReplSet --port 27024 --dbpath ~/mongodb/shard3
 
    For `shard2`:
    ```bash
-   mongo --port 27023
+   mongosh --port 27023
    ```
    ```javascript
    rs.initiate({
@@ -102,7 +102,7 @@ mongod --shardsvr --replSet shard3ReplSet --port 27024 --dbpath ~/mongodb/shard3
 
    For `shard3`:
    ```bash
-   mongo --port 27024
+   mongosh --port 27024
    ```
    ```javascript
    rs.initiate({
@@ -129,7 +129,7 @@ The **mongos** process routes queries to the appropriate shard.
 
 2. Connect to the **mongos** instance:
    ```bash
-   mongo --port 27017
+   mongosh --port 27017
    ```
 
 ---
