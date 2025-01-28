@@ -41,6 +41,25 @@ Ensure MongoDB is running on your local machine or a remote server.
    ```javascript
    sh.shardCollection("library.books", { _id: "hashed" });
    ```
+   - Use secondary nodes for read scaling:
+  ```javascript
+  db.books.find().readPref("secondary");
+  ```
+- if an error shows that you need index field key  then exit mongos and  log back into your database
+
+```javascript
+exit
+```
+
+```javascript
+mongosh --port 27010
+```
+
+```javascript
+db.books.createIndex({ _id: "hashed" });
+```
+
+Logout of db and then log back in as mongos and repeat 
 
 #### **b. Distribute Reads and Writes**
 - Use secondary nodes for read scaling:
@@ -192,3 +211,5 @@ Ensure MongoDB is running on your local machine or a remote server.
 - **Replication and Durability**: Configure replica sets and use write concern to ensure data durability.
 - **Master-Slave Replication**: Understand the legacy replication model (not recommended for new deployments).
 - **Handling Failures**: Simulate and resolve replication failures to ensure high availability.
+
+

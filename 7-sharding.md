@@ -48,15 +48,34 @@ Ensure MongoDB is running on your local machine or a remote server.
 ---
 
 ### **3. Setting Up a MongoDB Shard Cluster**
+Create directories for **config servers**, **shards**, and **logs**. For example:
 
-#### **a. Start Config Servers**
-1. Start three MongoDB instances as config servers:
+```bash
+mkdir -p ~/mongodb/shard1 ~/mongodb/shard2 ~/mongodb/shard3 ~/mongodb/secondary
+mkdir -p ~/mongodb/config1 ~/mongodb/config2 ~/mongodb/config3
+mkdir -p ~/mongodb/logs
+```
+
+---
+
+### **Step 3: Start Config Server Replica Set**
+
+Config servers are critical for managing metadata. Start a **config server replica set**:
+
+1. Start 3 config server instances (one per terminal):
+
+```bash
+mongod --configsvr --replSet configReplSet --port 27019 --dbpath ~/mongodb/config1 --logpath ~/mongodb/logs/config1.log --fork
+mongod --configsvr --replSet configReplSet --port 27020 --dbpath ~/mongodb/config2 --logpath ~/mongodb/logs/config2.log --fork
+mongod --configsvr --replSet configReplSet --port 27021 --dbpath ~/mongodb/config3 --logpath ~/mongodb/logs/config3.log --fork
+```
+
+2. Connect to one of the config servers:
    ```bash
-   mongod --configsvr --replSet configReplSet --port 27019 --dbpath /data/config1
-   mongod --configsvr --replSet configReplSet --port 27020 --dbpath /data/config2
-   mongod --configsvr --replSet configReplSet --port 27021 --dbpath /data/config3
+   mongosh --port 27019
    ```
-2. Initialize the config server replica set:
+
+3. Initiate the replica set:
    ```javascript
    rs.initiate({
      _id: "configReplSet",
@@ -66,53 +85,129 @@ Ensure MongoDB is running on your local machine or a remote server.
        { _id: 1, host: "localhost:27020" },
        { _id: 2, host: "localhost:27021" }
      ]
-   });
+   })
    ```
 
-#### **b. Start Shards**
-1. Start two MongoDB instances as shards:
-   ```bash
-   mongod --shardsvr --replSet shard1ReplSet --port 27022 --dbpath /data/shard1
-   mongod --shardsvr --replSet shard1ReplSet --port 27023 --dbpath /data/shard2
+4. Verify the status:
+   ```javascript
+   rs.status()
    ```
-2. Initialize the shard replica sets:
+
+---
+
+### **Step 4: Start Shard Servers**
+
+Start multiple shards. Each shard can also be a replica set for high availability. Here, we'll create 3 shards (one per terminal):
+
+1. Start each shard instance:
+
+```bash
+mongod --shardsvr --replSet shard1ReplSet --port 27022 --dbpath ~/mongodb/shard1 --logpath ~/mongodb/logs/shard1.log --fork
+mongod --shardsvr --replSet shard1ReplSet --port 27023 --dbpath ~/mongodb/shard2 --logpath ~/mongodb/logs/shard2.log --fork
+mongod --shardsvr --replSet shard1ReplSet --port 27024 --dbpath ~/mongodb/shard3 --logpath ~/mongodb/logs/shard3.log --fork 
+mongod --shardsvr --replSet shard1ReplSet --port 27033 --dbpath ~/mongodb/secondary --logpath ~/mongodb/logs/shard3.log --fork
+```
+
+2. Connect to each shard and initiate their replica sets:
+
+   For `shard1`:
+   ```bash
+   mongosh --port 27022
+   ```
    ```javascript
    rs.initiate({
      _id: "shard1ReplSet",
-     members: [
-       { _id: 0, host: "localhost:27022" },
-       { _id: 1, host: "localhost:27023" }
-     ]
-   });
+     members: [{ _id: 0, host: "localhost:27022" }]
+   })
    ```
 
-#### **c. Start Query Routers (Mongos)**
-1. Start a `mongos` instance:
-   ```bash
-   mongos --configdb configReplSet/localhost:27019,localhost:27020,localhost:27021 --port 27024
-   ```
-
-#### **d. Add Shards to the Cluster**
-1. Connect to the `mongos` instance:
+   add secondary  shards:
    ```bash
    mongosh --port 27024
    ```
-2. Add shards to the cluster:
    ```javascript
-   sh.addShard("shard1ReplSet/localhost:27022,localhost:27023");
+   rs.add("localhost:27023");
+   rs.add("localhost:27024");
+   rs.add("localhost:27033");
+   ```
+3. Verify each replica set’s status:
+   ```javascript
+   rs.status()
    ```
 
-#### **e. Enable Sharding for the Database**
-1. Enable sharding for the `sales` database:
-   ```javascript
-   sh.enableSharding("sales");
+---
+
+### **Step 5: Start the Mongos Router**
+
+The **mongos** process routes queries to the appropriate shard.
+
+1. Start the **mongos** instance:
+   ```bash
+   mongos --configdb configReplSet/localhost:27019,localhost:27020,localhost:27021 --logpath ~/mongodb/logs/mongos.log --fork --port 27010 #make sure mongos port is not used
    ```
 
-#### **f. Shard a Collection**
-1. Shard the `orders` collection using the `region` field as the shard key:
-   ```javascript
-   sh.shardCollection("sales.orders", { region: 1 });
+2. Connect to the **mongos** instance:
+   ```bash
+   mongosh --port 27010
    ```
+
+---
+
+### **Step 6: Add Shards to the Cluster**
+
+1. Add the shards to the cluster via the `mongos` router:
+   ```javascript
+   sh.addShard("shard1ReplSet/localhost:27022")
+   sh.addShard("shard2ReplSet/localhost:27023")
+   sh.addShard("shard3ReplSet/localhost:27024")
+   ```
+
+2. Verify the shards are added:
+   ```javascript
+   sh.status()
+   ```
+
+---
+
+### **Step 7: Enable Sharding for a Database**
+
+1. Enable sharding for a specific database (e.g., `myDatabase`):
+   ```javascript
+   sh.enableSharding("myDatabase")
+   ```
+
+2. Create a sharded collection (e.g., `myCollection`) with a shard key:
+   ```javascript
+   sh.shardCollection("myDatabase.myCollection", { keyField: 1 })
+   ```
+
+---
+
+### **Step 8: Verify the Cluster**
+
+1. Insert data into the sharded collection:
+   ```javascript
+   use myDatabase
+   db.myCollection.insertMany([
+     { keyField: 1, value: "A" },
+     { keyField: 2, value: "B" },
+     { keyField: 3, value: "C" }
+   ])
+   ```
+
+2. Check the distribution of chunks:
+   ```javascript
+   sh.status()
+   ```
+
+---
+
+### **Summary**
+
+You’ve now set up a sharded MongoDB cluster with:
+- 3 Config Servers.
+- 3 Shards (each can be a replica set).
+- 1 Mongos Router.
 
 ---
 
