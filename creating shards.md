@@ -20,7 +20,7 @@ Setting up a **sharded cluster** in MongoDB on your localhost involves configuri
 Create directories for **config servers**, **shards**, and **logs**. For example:
 
 ```bash
-mkdir -p ~/mongodb/shard1 ~/mongodb/shard2 ~/mongodb/shard3
+mkdir -p ~/mongodb/shard1 ~/mongodb/shard2 ~/mongodb/shard3 ~/momgodb/secondary
 mkdir -p ~/mongodb/config1 ~/mongodb/config2 ~/mongodb/config3
 mkdir -p ~/mongodb/logs
 ```
@@ -73,7 +73,8 @@ Start multiple shards. Each shard can also be a replica set for high availabilit
 ```bash
 mongod --shardsvr --replSet shard1ReplSet --port 27022 --dbpath ~/mongodb/shard1 --logpath ~/mongodb/logs/shard1.log --fork
 mongod --shardsvr --replSet shard2ReplSet --port 27023 --dbpath ~/mongodb/shard2 --logpath ~/mongodb/logs/shard2.log --fork
-mongod --shardsvr --replSet shard3ReplSet --port 27024 --dbpath ~/mongodb/shard3 --logpath ~/mongodb/logs/shard3.log --fork
+mongod --shardsvr --replSet shard3ReplSet --port 27024 --dbpath ~/mongodb/shard3 --logpath ~/mongodb/logs/shard3.log --fork 
+mongod --shardsvr --replSet shard3ReplSet --port 27033 --dbpath ~/mongodb/secondary --logpath ~/mongodb/logs/shard3.log --fork
 ```
 
 2. Connect to each shard and initiate their replica sets:
