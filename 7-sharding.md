@@ -122,9 +122,7 @@ mongod --shardsvr --replSet shard1ReplSet --port 27033 --dbpath ~/mongodb/second
    ```
 
    add secondary  shards:
-   ```bash
-   mongosh --port 27024
-   ```
+ 
    ```javascript
    rs.add("localhost:27023");
    rs.add("localhost:27024");
@@ -158,8 +156,8 @@ The **mongos** process routes queries to the appropriate shard.
 1. Add the shards to the cluster via the `mongos` router:
    ```javascript
    sh.addShard("shard1ReplSet/localhost:27022")
-   sh.addShard("shard2ReplSet/localhost:27023")
-   sh.addShard("shard3ReplSet/localhost:27024")
+   sh.addShard("shard1ReplSet/localhost:27023")
+   sh.addShard("shard1ReplSet/localhost:27024")
    ```
 
 2. Verify the shards are added:
